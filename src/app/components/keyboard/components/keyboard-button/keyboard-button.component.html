@@ -1,0 +1,4 @@
+<button mat-raised-button class="keyboard-button" tabindex="-1" [ngClass]="keyboardButtonClassList" (click)="isDisabled ? null: clickHandler.emit()">
+  <mat-icon *ngIf="hasIcon">{{ keyboardButtonIcon }}</mat-icon>
+  <ng-container *ngIf="!hasIcon">{{ keyboardButtonValue }}</ng-container>
+</button>
