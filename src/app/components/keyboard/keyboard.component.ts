@@ -1,4 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  Output,
+  EventEmitter,
+  ElementRef
+} from '@angular/core';
 
 @Component({
   selector: 'app-keyboard',
@@ -6,8 +13,12 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./keyboard.component.css']
 })
 export class KeyboardComponent implements OnInit {
-  constructor() {}
+  constructor(element: ElementRef) {
+    this.inputNode = element.nativeElement;
+  }
+  inputNode;
 
+  @Input() isNumeric = false;
   isUppercased() {}
   ngOnInit() {}
 }
