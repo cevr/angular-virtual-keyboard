@@ -11,14 +11,14 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 
 import { FlexLayoutModule } from '@angular/flex-layout';
 
-import { NgVirtualKeyboardDirective } from './directives/virtual-keyboard.directive';
+import { VirtualKeyboardDirective } from './directives/virtual-keyboard.directive';
 import { VirtualKeyboardComponent } from './components/virtual-keyboard/virtual-keyboard.component';
 import { VirtualKeyboardKeyComponent } from './components/virtual-keyboard-key/virtual-keyboard-key.component';
 import { VirtualKeyboardService } from './services/virtual-keyboard.service';
 
 @NgModule({
   declarations: [
-    NgVirtualKeyboardDirective,
+    VirtualKeyboardDirective,
     VirtualKeyboardComponent,
     VirtualKeyboardKeyComponent
   ],
@@ -35,6 +35,6 @@ import { VirtualKeyboardService } from './services/virtual-keyboard.service';
     MatFormFieldModule
   ],
   entryComponents: [VirtualKeyboardComponent],
-  exports: [NgVirtualKeyboardDirective]
+  exports: [VirtualKeyboardDirective]
 })
-export class NgVirtualKeyboardModule {}
+export class VirtualKeyboardModule {}

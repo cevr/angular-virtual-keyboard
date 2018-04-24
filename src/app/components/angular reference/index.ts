@@ -1,4 +1,4 @@
-import { NgVirtualKeyboardDirective } from './directives/virtual-keyboard.directive';
-import { NgVirtualKeyboardModule } from './virtual-keyboard.module';
+import { VirtualKeyboardDirective } from './directives/virtual-keyboard.directive';
+import { VirtualKeyboardModule } from './virtual-keyboard.module';
 
-export { NgVirtualKeyboardDirective, NgVirtualKeyboardModule };
+export { VirtualKeyboardDirective, VirtualKeyboardModule };

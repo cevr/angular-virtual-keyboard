@@ -6,21 +6,21 @@ import {
   alphanumericKeyboard,
   alphanumericNordicKeyboard,
   extendedKeyboard,
-  extendedNordicKeyboard,
   KeyboardLayout,
   numericKeyboard,
   phoneKeyboard
 } from '../models/layouts';
 
 @Directive({
-  selector: '[ng-virtual-keyboard]'
+  selector: '[virtual-keyboard]'
 })
-export class NgVirtualKeyboardDirective {
+export class VirtualKeyboardDirective {
   private opened = false;
   private focus = true;
 
-  @Input('ng-virtual-keyboard-layout') layout: KeyboardLayout | string;
-  @Input('ng-virtual-keyboard-placeholder') placeholder: string;
+  @Input('virtual-keyboard-layout') layout: KeyboardLayout | string;
+  @Input('virtual-keyboard-placeholder') placeholder: string;
+  @Input('virtual-keyboard-should-render') shouldRender: boolean;
 
   @HostListener('window:blur')
   onWindowBlur() {
@@ -65,6 +65,8 @@ export class NgVirtualKeyboardDirective {
       dialogRef.componentInstance.inputElement = this.element;
       dialogRef.componentInstance.layout = this.getLayout();
       dialogRef.componentInstance.placeholder = this.getPlaceHolder();
+      console.log(this.shouldRender)
+      dialogRef.componentInstance.keyboardShouldRender = this.shouldRender;
 
       dialogRef.afterClosed().subscribe(() => {
         setTimeout(() => {
@@ -86,15 +88,11 @@ export class NgVirtualKeyboardDirective {
       case 'alphanumeric':
         layout = alphanumericKeyboard;
         break;
-      case 'alphanumericNordic':
-        layout = alphanumericNordicKeyboard;
-        break;
+
       case 'extended':
         layout = extendedKeyboard;
         break;
-      case 'extendedNordic':
-        layout = extendedNordicKeyboard;
-        break;
+
       case 'numeric':
         layout = numericKeyboard;
         break;

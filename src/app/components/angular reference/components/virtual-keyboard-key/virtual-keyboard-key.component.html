@@ -1,0 +1,10 @@
+<button mat-raised-button [disableRipple]="true" color="primary" [ngClass]="{warn: warn}" fxFlex="{{ flexValue }}" [class.spacer]="spacer" [disabled]="isDisabled()"
+  (click)="onKeyPress()">
+  <span *ngIf="!special">{{ keyValue }}</span>
+
+  <span *ngIf="special" >
+    <mat-icon *ngIf="icon">{{ icon }}</mat-icon>
+
+    {{ text }}
+  </span>
+</button>

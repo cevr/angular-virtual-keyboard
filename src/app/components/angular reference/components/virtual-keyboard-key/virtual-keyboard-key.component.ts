@@ -1,9 +1,17 @@
-import { Component, OnInit, Input, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  Input,
+  EventEmitter,
+  Output,
+  ChangeDetectionStrategy
+} from '@angular/core';
 
 import { KeyPressInterface } from '../../interfaces/key-press.interface';
 import {
   isSpacer,
   isSpecial,
+  shouldWarn,
   notDisabledSpecialKeys,
   specialKeyIcons,
   specialKeyTexts
@@ -11,28 +19,15 @@ import {
 
 @Component({
   selector: 'virtual-keyboard-key',
-  template: `
-    <button
-      mat-raised-button
-      color="primary"
-      fxFlex="{{ flexValue }}"
-      [class.spacer]="spacer"
-      [disabled]="isDisabled()"
-      (click)="onKeyPress()"
-    >
-      <span *ngIf="!special">{{ keyValue }}</span>
+  changeDetection: ChangeDetectionStrategy.OnPush,
 
-      <span *ngIf="special">
-        <mat-icon *ngIf="icon">{{ icon }}</mat-icon>
-
-        {{ text }}
-      </span>
-    </button>
-  `
+  templateUrl: './virtual-keyboard-key.component.html',
+  styleUrls: ['./virtual-keyboard-key.component.css']
 })
 export class VirtualKeyboardKeyComponent implements OnInit {
   @Input() key: string;
   @Input() disabled: boolean;
+  @Input() inputIsEmpty: boolean;
   @Output() keyPress = new EventEmitter<KeyPressInterface>();
 
   public special = false;
@@ -41,7 +36,7 @@ export class VirtualKeyboardKeyComponent implements OnInit {
   public keyValue: string;
   public icon: string;
   public text: string;
-
+  public warn = false;
   /**
    * Constructor of the class.
    */
@@ -60,6 +55,7 @@ export class VirtualKeyboardKeyComponent implements OnInit {
     if (this.key.length > 1) {
       this.spacer = isSpacer(this.key);
       this.special = isSpecial(this.key);
+      this.warn = shouldWarn(this.key)
 
       const matches = /^(\w+)(:(\d+(\.\d+)?))?$/g.exec(this.key);
 
@@ -84,20 +80,25 @@ export class VirtualKeyboardKeyComponent implements OnInit {
     this.flexValue = `${multiplier * 64 + fix}px`;
   }
 
+
+
   /**
    * Method to check if key is disabled or not.
    *
    * @returns {boolean}
    */
   public isDisabled(): boolean {
-    if (this.spacer) {
+    if (this.spacer ) {
       return true;
     } else if (
       this.disabled &&
       notDisabledSpecialKeys.indexOf(this.keyValue) !== -1
     ) {
       return false;
-    } else {
+    } else if (this.key.includes('Delete') && this.inputIsEmpty) {
+
+      return true;
+    }else {
       return this.disabled;
     }
   }
