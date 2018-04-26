@@ -15,12 +15,16 @@ import { VirtualKeyboardDirective } from './directives/virtual-keyboard.directiv
 import { VirtualKeyboardComponent } from './components/virtual-keyboard/virtual-keyboard.component';
 import { VirtualKeyboardKeyComponent } from './components/virtual-keyboard-key/virtual-keyboard-key.component';
 import { VirtualKeyboardService } from './services/virtual-keyboard.service';
+import { VirtualKeyboardLayoutPipe, CheckIfDisabledPipe, CheckIfKeyboardDisabledPipe } from './pipes/index';
 
 @NgModule({
   declarations: [
     VirtualKeyboardDirective,
     VirtualKeyboardComponent,
-    VirtualKeyboardKeyComponent
+    VirtualKeyboardKeyComponent,
+    VirtualKeyboardLayoutPipe,
+    CheckIfDisabledPipe,
+    CheckIfKeyboardDisabledPipe
   ],
   providers: [VirtualKeyboardService],
   imports: [

@@ -5,13 +5,17 @@ import {
   OnInit,
   ViewChild,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  AfterViewInit,
   Output,
   EventEmitter,
   HostListener
 } from '@angular/core';
 import { MatDialogRef } from '@angular/material';
+import memo from 'memo-decorator';
 
-import { keyboardCapsLockLayout, KeyboardLayout } from '../../models/layouts';
+import { KeyboardLayout, specialKeys } from '../../models/layouts';
+import { keyboardCapsLockLayout } from '../../helpers/keys';
 import { VirtualKeyboardService } from '../../services/virtual-keyboard.service';
 import { KeyPressInterface } from '../../interfaces/key-press.interface';
 
@@ -24,16 +28,20 @@ import { KeyPressInterface } from '../../interfaces/key-press.interface';
 })
 export class VirtualKeyboardComponent implements OnInit, OnDestroy {
   @ViewChild('keyboardInput') keyboardInput: ElementRef;
-  @Output('test') submitHandler = new EventEmitter()
+  @Output() submitHandler = new EventEmitter();
+
   public inputElement: ElementRef;
   public layout: KeyboardLayout;
   public placeholder: string;
   public disabled: boolean;
   public maxLength: number | string;
   public keyboardShouldRender: boolean;
-  virtualKeyboardInputValue = '';
+  public directiveRef;
+  public startUppercased: boolean;
+  public subscriptions: any[];
+  public shift = false;
+
   private caretPosition: number;
-  private shift = false;
 
   /**
    * Helper method to set cursor in input to correct place.
@@ -68,7 +76,8 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
    */
   public constructor(
     public dialogRef: MatDialogRef<VirtualKeyboardComponent>,
-    private virtualKeyboardService: VirtualKeyboardService
+    private virtualKeyboardService: VirtualKeyboardService,
+    private changeDetection: ChangeDetectorRef
   ) {}
 
   /**
@@ -81,17 +90,21 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
    *  3) Reset of possible previously tracked caret position
    */
   public ngOnInit(): void {
+    this.keyboardInput.nativeElement.value = this.inputElement.nativeElement.value;
+
+    this.caretPosition = this.keyboardInput.nativeElement.value.length;
+
     // This is a workaround to ensure that the keyboard input is focused on every render
     setTimeout(() => {
       this.keyboardInput.nativeElement.focus();
     }, 0);
-    console.log('component level', typeof this.keyboardShouldRender);
+
     this.virtualKeyboardService.shift$.subscribe((shift: boolean) => {
       this.shift = shift;
     });
 
     this.virtualKeyboardService.capsLock$.subscribe((capsLock: boolean) => {
-      this.layout = keyboardCapsLockLayout(this.layout, capsLock);
+      this.shift = capsLock;
     });
 
     this.virtualKeyboardService.caretPosition$.subscribe(
@@ -108,18 +121,21 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
       }
     );
 
+    if (this.startUppercased) {
+      this.virtualKeyboardService.toggleShift();
+    }
+
     if (this.keyboardInput.nativeElement.value.length) {
       this.virtualKeyboardService.setCaretPosition(
         this.keyboardInput.nativeElement.value.length
       );
     }
 
-    this.maxLength =
-      this.keyboardInput.nativeElement.maxLength > 0
-        ? this.keyboardInput.nativeElement.maxLength
-        : 80;
+    this.maxLength = !!this.inputElement.nativeElement.maxLength
+      ? this.inputElement.nativeElement.maxLength
+      : 80;
 
-    this.checkDisabled();
+
   }
 
   /**
@@ -135,6 +151,7 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
    * Method to close virtual keyboard dialog
    */
   public close(): void {
+    this.caretPosition = this.keyboardInput.nativeElement.value.length;
     this.dialogRef.close();
   }
 
@@ -163,26 +180,18 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
     } else {
       this.handleNormalKey(event.keyValue);
 
-      this.dispatchEvents(event);
-
-      // Toggle shift if it's activated
+      // turn shift off after first normal keypress
       if (this.shift) {
         this.virtualKeyboardService.toggleShift();
       }
     }
 
-    this.checkDisabled();
+
+    this.keyboardInput.nativeElement.focus();
   }
 
-  /**
-   * Method to check is virtual keyboard input is disabled.
-   */
-  private checkDisabled(): void {
-    const maxLength = this.keyboardInput.nativeElement.maxLength;
-    const valueLength = this.keyboardInput.nativeElement.value.length;
 
-    this.disabled = maxLength > 0 && valueLength >= maxLength;
-  }
+
 
   /**
    * Method to handle "normal" key press event, this will add specified character to input value.
@@ -207,7 +216,6 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
     }
 
     // And finally set new value to input
-    this.virtualKeyboardInputValue = value;
     this.keyboardInput.nativeElement.value = value;
   }
 
@@ -231,6 +239,9 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
       case 'Backspace':
         const currentValue = this.keyboardInput.nativeElement.value;
 
+        if (!currentValue) {
+          return;
+        }
         // We have a caret position, so we need to remove char from that position
         if (!isNaN(this.caretPosition)) {
           // And current position must > 0
@@ -239,7 +250,6 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
             const end = currentValue.slice(this.caretPosition);
 
             this.keyboardInput.nativeElement.value = `${start}${end}`;
-            this.virtualKeyboardInputValue = `${start}${end}`;
 
             // Update caret position
             this.virtualKeyboardService.setCaretPosition(
@@ -251,12 +261,10 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
             0,
             currentValue.length - 1
           );
-          this.virtualKeyboardInputValue = currentValue.substring(
-            0,
-            currentValue.length - 1
-          );
         }
-
+        if (this.startUppercased && this.keyboardInput.nativeElement.value.length === 0) {
+          this.virtualKeyboardService.toggleShift();
+        }
         // Set focus to keyboard input
         this.keyboardInput.nativeElement.focus();
         break;
@@ -269,49 +277,36 @@ export class VirtualKeyboardComponent implements OnInit, OnDestroy {
       case 'SpaceBar':
         this.handleNormalKey(' ');
         break;
+      case 'Left':
+        if (this.caretPosition > 0) {
+          this.virtualKeyboardService.setCaretPosition(this.caretPosition - 1);
+        }
+        break;
+      case 'Right':
+        if (
+          this.caretPosition < this.keyboardInput.nativeElement.value.length
+        ) {
+          this.virtualKeyboardService.setCaretPosition(this.caretPosition + 1);
+        }
+        break;
+
       case 'Delete':
+        if (!this.keyboardInput.nativeElement.value) {
+          return;
+        }
         this.keyboardInput.nativeElement.value = '';
+        if (this.startUppercased) {
+          this.virtualKeyboardService.toggleShift();
+        }
         break;
     }
   }
 
-  /**
-   * Method to dispatch necessary keyboard events to current input element.
-   *
-   * @see https://w3c.github.io/uievents/tools/key-event-viewer.html
-   *
-   * @param {KeyPressInterface} event
-   */
-  private dispatchEvents(event: KeyPressInterface) {
-    const eventInit: KeyboardEventInit = {
-      bubbles: true,
-      cancelable: true,
-      shiftKey: this.shift,
-      key: event.keyValue,
-      code: `Key${event.keyValue.toUpperCase()}}`,
-      location: 0
-    };
-
-    // Simulate all needed events on base element
-    this.keyboardInput.nativeElement.dispatchEvent(
-      new KeyboardEvent('keydown', eventInit)
-    );
-    this.keyboardInput.nativeElement.dispatchEvent(
-      new KeyboardEvent('keypress', eventInit)
-    );
-    this.keyboardInput.nativeElement.dispatchEvent(
-      new Event('input', { bubbles: true })
-    );
-    this.keyboardInput.nativeElement.dispatchEvent(
-      new KeyboardEvent('keyup', eventInit)
-    );
-
-    // And set focus to input
-    this.keyboardInput.nativeElement.focus();
+  public onSubmit() {
+    // this.directiveRef.dispatch.emit({value: this.keyboardInput.nativeElement.value})
+    this.inputElement.nativeElement.value = this.keyboardInput.nativeElement.value;
+    this.close();
   }
 
-  private onSubmit() {
-    this.submitHandler.emit({value: this.keyboardInput.nativeElement.value})
-    this.close()
-  }
+
 }

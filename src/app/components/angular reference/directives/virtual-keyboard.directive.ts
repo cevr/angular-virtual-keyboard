@@ -1,26 +1,32 @@
-import { Directive, ElementRef, HostListener, Input } from '@angular/core';
+import {
+  Directive,
+  ElementRef,
+  HostListener,
+  Input,
+  Output,
+  EventEmitter
+} from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material';
+import memo from 'memo-decorator';
 
 import { VirtualKeyboardComponent } from '../components/virtual-keyboard/virtual-keyboard.component';
 import {
-  alphanumericKeyboard,
-  alphanumericNordicKeyboard,
   extendedKeyboard,
   KeyboardLayout,
-  numericKeyboard,
-  phoneKeyboard
+  numericKeyboard
 } from '../models/layouts';
 
 @Directive({
-  selector: '[virtual-keyboard]'
+  selector: 'input[virtual-keyboard]'
 })
 export class VirtualKeyboardDirective {
   private opened = false;
   private focus = true;
 
   @Input('virtual-keyboard-layout') layout: KeyboardLayout | string;
-  @Input('virtual-keyboard-placeholder') placeholder: string;
-  @Input('virtual-keyboard-should-render') shouldRender: boolean;
+  @Input('virtual-keyboard-should-render') shouldRender = false;
+  @Input('virtual-keyboard-start-uppercased') startUppercased = true;
+  @Output() dispatch = new EventEmitter();
 
   @HostListener('window:blur')
   onWindowBlur() {
@@ -63,10 +69,11 @@ export class VirtualKeyboardDirective {
 
       dialogRef = this.dialog.open(VirtualKeyboardComponent);
       dialogRef.componentInstance.inputElement = this.element;
-      dialogRef.componentInstance.layout = this.getLayout();
-      dialogRef.componentInstance.placeholder = this.getPlaceHolder();
-      console.log(this.shouldRender)
+      dialogRef.componentInstance.layout = this.getLayout(this.layout);
+      dialogRef.componentInstance.placeholder = this.element.nativeElement.placeholder;
       dialogRef.componentInstance.keyboardShouldRender = this.shouldRender;
+      dialogRef.componentInstance.startUppercased = this.startUppercased;
+      dialogRef.componentInstance.directiveRef = this;
 
       dialogRef.afterClosed().subscribe(() => {
         setTimeout(() => {
@@ -81,40 +88,14 @@ export class VirtualKeyboardDirective {
    *
    * @returns {KeyboardLayout}
    */
-  private getLayout(): KeyboardLayout {
-    let layout;
-
-    switch (this.layout) {
-      case 'alphanumeric':
-        layout = alphanumericKeyboard;
-        break;
-
-      case 'extended':
-        layout = extendedKeyboard;
-        break;
-
+  @memo()
+  private getLayout(layout): KeyboardLayout {
+    switch (layout) {
       case 'numeric':
-        layout = numericKeyboard;
-        break;
-      case 'phone':
-        layout = phoneKeyboard;
-        break;
+        return numericKeyboard;
+
       default:
-        layout = this.layout;
-        break;
+        return extendedKeyboard;
     }
-
-    return layout;
-  }
-
-  /**
-   * Getter for used placeholder for virtual keyboard input field.
-   *
-   * @returns {string}
-   */
-  private getPlaceHolder(): string {
-    return this.placeholder
-      ? this.placeholder
-      : this.element.nativeElement.placeholder;
   }
 }

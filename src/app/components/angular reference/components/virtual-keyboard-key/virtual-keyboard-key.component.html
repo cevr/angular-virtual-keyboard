@@ -1,4 +1,4 @@
-<button mat-raised-button [disableRipple]="true" color="primary" [ngClass]="{warn: warn}" fxFlex="{{ flexValue }}" [class.spacer]="spacer" [disabled]="isDisabled()"
+<button mat-raised-button [disableRipple]="true" color="primary" [ngClass]="{warn: warn}" fxFlex="{{ flexValue }}" [class.spacer]="spacer" [disabled]="isNeverDisabled ? false : keyValue | checkIfDisabled: disabled"
   (click)="onKeyPress()">
   <span *ngIf="!special">{{ keyValue }}</span>
 

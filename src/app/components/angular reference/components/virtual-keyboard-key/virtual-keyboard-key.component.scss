@@ -7,9 +7,18 @@
   margin: 2px;
   font-size: 32px;
   line-height: 32px;
-  border-radius: 10%;
+}
+.mat-button,
+.mat-icon-button,
+.mat-raised-button:active {
+  background-color: #ccc;
 }
 
+.mat-button,
+.mat-icon-button,
+.mat-raised-button:disabled {
+  pointer-events: none;
+}
 .mat-button.spacer,
 .mat-icon-button.spacer,
 .mat-raised-button.spacer {

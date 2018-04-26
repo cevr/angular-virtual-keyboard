@@ -4,30 +4,38 @@ import {
   Input,
   EventEmitter,
   Output,
-  ChangeDetectionStrategy
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  AfterViewInit,
 } from '@angular/core';
+import memo from 'memo-decorator';
 
 import { KeyPressInterface } from '../../interfaces/key-press.interface';
+import {
+  KeyboardLayout,
+  specialKeys,
+  specialKeyIcons,
+  specialKeyTexts,
+  notDisabledSpecialKeys
+} from '../../models/layouts';
 import {
   isSpacer,
   isSpecial,
   shouldWarn,
-  notDisabledSpecialKeys,
-  specialKeyIcons,
-  specialKeyTexts
-} from '../../models/layouts';
+  isNeverDisabled
+} from '../../helpers/keys';
 
 @Component({
   selector: 'virtual-keyboard-key',
   changeDetection: ChangeDetectionStrategy.OnPush,
 
   templateUrl: './virtual-keyboard-key.component.html',
-  styleUrls: ['./virtual-keyboard-key.component.css']
+  styleUrls: ['./virtual-keyboard-key.component.scss']
 })
 export class VirtualKeyboardKeyComponent implements OnInit {
   @Input() key: string;
   @Input() disabled: boolean;
-  @Input() inputIsEmpty: boolean;
+  @Input() inputRef;
   @Output() keyPress = new EventEmitter<KeyPressInterface>();
 
   public special = false;
@@ -37,10 +45,12 @@ export class VirtualKeyboardKeyComponent implements OnInit {
   public icon: string;
   public text: string;
   public warn = false;
+  public isNeverDisabled = false;
   /**
    * Constructor of the class.
    */
-  public constructor() {}
+  public constructor(public changeDetection: ChangeDetectorRef) {
+  }
 
   /**
    * On init life cycle hook, within this we'll initialize following properties:
@@ -55,14 +65,14 @@ export class VirtualKeyboardKeyComponent implements OnInit {
     if (this.key.length > 1) {
       this.spacer = isSpacer(this.key);
       this.special = isSpecial(this.key);
-      this.warn = shouldWarn(this.key)
+      this.warn = shouldWarn(this.key);
+      this.isNeverDisabled = notDisabledSpecialKeys.indexOf(this.key) !== -1
 
-      const matches = /^(\w+)(:(\d+(\.\d+)?))?$/g.exec(this.key);
+      const specialKey = /^(\w+)(:(\d+(\.\d+)?))?$/g.exec(this.key);
+      this.keyValue = specialKey[1];
 
-      this.keyValue = matches[1];
-
-      if (matches[3]) {
-        multiplier = parseFloat(matches[3]);
+      if (specialKey[3]) {
+        multiplier = parseFloat(specialKey[3]);
         fix = (multiplier - 1) * 4;
       }
     } else {
@@ -81,28 +91,12 @@ export class VirtualKeyboardKeyComponent implements OnInit {
   }
 
 
-
-  /**
-   * Method to check if key is disabled or not.
-   *
-   * @returns {boolean}
-   */
-  public isDisabled(): boolean {
-    if (this.spacer ) {
-      return true;
-    } else if (
-      this.disabled &&
-      notDisabledSpecialKeys.indexOf(this.keyValue) !== -1
-    ) {
-      return false;
-    } else if (this.key.includes('Delete') && this.inputIsEmpty) {
-
-      return true;
-    }else {
-      return this.disabled;
-    }
+  ngDoCheck() {
+    console.count('ngDoCheck')
   }
-
+  ngOnChanges() {
+    console.count('ngOnChanges')
+  }
   /**
    * Method to handle actual "key" press from virtual keyboard.
    *  1) Key is "Special", process special key event
@@ -115,4 +109,6 @@ export class VirtualKeyboardKeyComponent implements OnInit {
       key: this.key
     });
   }
+
+
 }

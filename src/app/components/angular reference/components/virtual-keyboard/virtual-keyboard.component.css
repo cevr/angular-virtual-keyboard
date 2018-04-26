@@ -4,13 +4,19 @@
   top: -16px;
   right: 0;
   margin-bottom: -40px;
+  background-color: #4caf50;
+  color: white;
 }
 
 .mat-input-container {
   margin: -16px 0;
   font-size: 32px;
+
 }
 
-/* .mat-input-element:disabled {
+.keyboard-disabled {
+  min-width: 45vw;
+}
+.mat-input-element:disabled {
   color: currentColor;
-} */
+}

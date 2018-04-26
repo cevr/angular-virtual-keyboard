@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { ReplaySubject } from 'rxjs/ReplaySubject';
 
 @Injectable()
-export class VirtualKeyboardService {
+export class VirtualKeyboardService implements OnDestroy {
   public shift$: ReplaySubject<boolean> = new ReplaySubject(1);
   public capsLock$: ReplaySubject<boolean> = new ReplaySubject(1);
   public caretPosition$: ReplaySubject<number> = new ReplaySubject(1);
@@ -64,5 +64,8 @@ export class VirtualKeyboardService {
    */
   public reset() {
     this.setShift(false);
+  }
+  ngOnDestroy() {
+    console.log('check');
   }
 }
