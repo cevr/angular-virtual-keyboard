@@ -1,15 +1,12 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { isSpacer, isNeverDisabled } from '../helpers/keys';
-import memo from 'memo-decorator';
 
 @Pipe({
-  name: 'checkIfDisabled',
+  name: 'checkIfKeyDisabled',
   pure: true
 })
-export class CheckIfDisabledPipe implements PipeTransform {
-  // @memo()
+export class CheckIfKeyDisabledPipe implements PipeTransform {
   transform(key: string, isDisabled: boolean): boolean {
-    console.count('pipe isDisabled');
     if (isSpacer(key)) {
       return true;
     } else if (isDisabled && isNeverDisabled(key)) {

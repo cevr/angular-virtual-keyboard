@@ -6,24 +6,16 @@ import {
   Output,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  AfterViewInit,
 } from '@angular/core';
-import memo from 'memo-decorator';
+import { isEqual } from 'lodash';
 
 import { KeyPressInterface } from '../../interfaces/key-press.interface';
 import {
-  KeyboardLayout,
-  specialKeys,
   specialKeyIcons,
   specialKeyTexts,
   notDisabledSpecialKeys
 } from '../../models/layouts';
-import {
-  isSpacer,
-  isSpecial,
-  shouldWarn,
-  isNeverDisabled
-} from '../../helpers/keys';
+import { isSpacer, isSpecial, shouldWarn, isEnterKey } from '../../helpers/keys';
 
 @Component({
   selector: 'virtual-keyboard-key',
@@ -33,24 +25,27 @@ import {
   styleUrls: ['./virtual-keyboard-key.component.scss']
 })
 export class VirtualKeyboardKeyComponent implements OnInit {
-  @Input() key: string;
+  @Input() key: any;
   @Input() disabled: boolean;
   @Input() inputRef;
   @Output() keyPress = new EventEmitter<KeyPressInterface>();
 
   public special = false;
   public spacer = false;
+  public warn = false;
+  public isEnter = false;
+  public isNeverDisabled = false;
+
   public flexValue: string;
   public keyValue: string;
   public icon: string;
   public text: string;
-  public warn = false;
-  public isNeverDisabled = false;
+
+  private changes;
   /**
    * Constructor of the class.
    */
-  public constructor(public changeDetection: ChangeDetectorRef) {
-  }
+  public constructor(public changeDetection: ChangeDetectorRef) {}
 
   /**
    * On init life cycle hook, within this we'll initialize following properties:
@@ -58,17 +53,19 @@ export class VirtualKeyboardKeyComponent implements OnInit {
    *  - keyValue
    *  - flexValue
    */
-  public ngOnInit(): void {
+  ngOnInit(): void {
     let multiplier = 1;
     let fix = 0;
 
-    if (this.key.length > 1) {
-      this.spacer = isSpacer(this.key);
-      this.special = isSpecial(this.key);
-      this.warn = shouldWarn(this.key);
-      this.isNeverDisabled = notDisabledSpecialKeys.indexOf(this.key) !== -1
+    if (this.key.value.length > 1) {
+      this.spacer = isSpacer(this.key.value);
+      this.special = isSpecial(this.key.value);
+      this.warn = shouldWarn(this.key.value);
+      this.isEnter = isEnterKey(this.key.value);
 
-      const specialKey = /^(\w+)(:(\d+(\.\d+)?))?$/g.exec(this.key);
+      this.isNeverDisabled = notDisabledSpecialKeys.indexOf(this.key.value) !== -1;
+
+      const specialKey = /^(\w+)(:(\d+(\.\d+)?))?$/g.exec(this.key.value);
       this.keyValue = specialKey[1];
 
       if (specialKey[3]) {
@@ -76,7 +73,7 @@ export class VirtualKeyboardKeyComponent implements OnInit {
         fix = (multiplier - 1) * 4;
       }
     } else {
-      this.keyValue = this.key;
+      this.keyValue = this.key.value;
     }
 
     if (this.special) {
@@ -90,12 +87,22 @@ export class VirtualKeyboardKeyComponent implements OnInit {
     this.flexValue = `${multiplier * 64 + fix}px`;
   }
 
-
-  ngDoCheck() {
-    console.count('ngDoCheck')
+  ngOnChanges(changes) {
+    if (this.changes) {
+      if (!isEqual(this.changes, changes)) {
+        if (!isEqual(changes.disabled, this.changes.disabled)) {
+          this.changeDetection.detectChanges();
+        }
+        if (!isEqual(changes.key, this.changes.key)) {
+          this.changeDetection.detectChanges();
+        }
+      }
+    }
+    this.changes = changes;
   }
-  ngOnChanges() {
-    console.count('ngOnChanges')
+
+  ngAfterViewInit() {
+    this.changeDetection.detach();
   }
   /**
    * Method to handle actual "key" press from virtual keyboard.
@@ -106,9 +113,7 @@ export class VirtualKeyboardKeyComponent implements OnInit {
     this.keyPress.emit({
       special: this.special,
       keyValue: this.keyValue,
-      key: this.key
+      key: this.key.value
     });
   }
-
-
 }

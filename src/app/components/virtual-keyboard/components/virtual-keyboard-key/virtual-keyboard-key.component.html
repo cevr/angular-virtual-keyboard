@@ -1,0 +1,15 @@
+<button
+  color="primary"
+  fxFlex="{{ flexValue }}"
+  class="keyboard-button"
+  [ngClass]="{ warn: warn, spacer: spacer, enter: isEnter}"
+  [disabled]="isNeverDisabled ? false : keyValue | checkIfKeyDisabled: disabled"
+  (mousedown)="onKeyPress()"
+>
+  <!-- If the key value is not special, then display the value -->
+  <span *ngIf="!special">{{ keyValue }}</span>
+  <!-- If the key value is special, then display an icon instead -->
+  <span *ngIf="special">
+    <mat-icon>{{ icon }}</mat-icon>
+  </span>
+</button>

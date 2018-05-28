@@ -1,0 +1,43 @@
+<div
+  class="container"
+  [ngClass]="{'keyboard-disabled': !keyboardShouldRender}"
+  (mousedown)="keyboardInput.focus()">
+  <div fxLayout="column" (mousedown)="keyboardInput.focus()">
+    <span>{{placeholder | translate}}</span>
+    <mat-error [ngClass]="{hidden: !errorMessage}" class="error">{{errorMessage | translate}}</mat-error>
+    <mat-form-field>
+      <button
+        *ngIf="!keyboardShouldRender"
+        class="close"
+        mat-mini-fab
+        (mousedown)="onSubmit()">
+        <mat-icon>check</mat-icon>
+      </button>
+
+      <input
+        matInput
+        #keyboardInput
+        (mousedown)="updateCaretPosition()"
+        [type]="inputType"
+        [maxLength]="maxLength"
+        [ngClass]="{'hide-caret': shouldHideCaret}"
+      />
+    </mat-form-field>
+    <ng-container *ngIf="keyboardShouldRender">
+      <div
+      fxLayout="row"
+      fxLayoutAlign="center center"
+      *ngFor="let row of (!shift ? layout : layout | getLayout: shift );"
+      (mousedown)="keyboardInput.focus()">
+        <virtual-keyboard-key
+          #keyboardKey
+          *ngFor="let key of row; let keyIndex = index; trackBy: trackByKeyValue"
+          [key]="key"
+          [disabled]="maxLength | checkIfKeyboardDisabled: keyboardInput.value.length"
+          [inputRef]="keyboardInput"
+          (keyPress)="keyPress($event)">
+        </virtual-keyboard-key>
+      </div>
+    </ng-container>
+  </div>
+</div>

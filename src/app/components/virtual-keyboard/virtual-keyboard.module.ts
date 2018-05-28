@@ -15,7 +15,12 @@ import { VirtualKeyboardDirective } from './directives/virtual-keyboard.directiv
 import { VirtualKeyboardComponent } from './components/virtual-keyboard/virtual-keyboard.component';
 import { VirtualKeyboardKeyComponent } from './components/virtual-keyboard-key/virtual-keyboard-key.component';
 import { VirtualKeyboardService } from './services/virtual-keyboard.service';
-import { VirtualKeyboardLayoutPipe, CheckIfDisabledPipe, CheckIfKeyboardDisabledPipe } from './pipes/index';
+import {
+  VirtualKeyboardLayoutPipe,
+  CheckIfKeyDisabledPipe,
+  CheckIfKeyboardDisabledPipe
+} from './pipes/index';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   declarations: [
@@ -23,7 +28,7 @@ import { VirtualKeyboardLayoutPipe, CheckIfDisabledPipe, CheckIfKeyboardDisabled
     VirtualKeyboardComponent,
     VirtualKeyboardKeyComponent,
     VirtualKeyboardLayoutPipe,
-    CheckIfDisabledPipe,
+    CheckIfKeyDisabledPipe,
     CheckIfKeyboardDisabledPipe
   ],
   providers: [VirtualKeyboardService],
@@ -36,7 +41,8 @@ import { VirtualKeyboardLayoutPipe, CheckIfDisabledPipe, CheckIfKeyboardDisabled
     MatDialogModule,
     MatIconModule,
     MatInputModule,
-    MatFormFieldModule
+    MatFormFieldModule,
+    TranslateModule
   ],
   entryComponents: [VirtualKeyboardComponent],
   exports: [VirtualKeyboardDirective]

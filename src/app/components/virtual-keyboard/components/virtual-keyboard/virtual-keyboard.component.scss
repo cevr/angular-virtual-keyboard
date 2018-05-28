@@ -1,0 +1,36 @@
+.close {
+  position: relative;
+  float: right;
+  top: -16px;
+  right: 0;
+  margin-bottom: -40px;
+  background-color: #4caf50;
+  color: white;
+}
+
+.mat-form-field {
+  margin: 0;
+  font-size: 32px;
+}
+
+.keyboard-disabled {
+  min-width: 45vw;
+}
+
+.hide-caret {
+  color: transparent;
+  text-shadow: 0 0 0 #fff;
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.error {
+  margin-top: 10px;
+}
+
+.hidden {
+  visibility: hidden;
+  height: 19px;
+}

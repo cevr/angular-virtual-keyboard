@@ -1,0 +1,39 @@
+.keyboard-button {
+  min-width: 64px;
+  min-height: 64px;
+  padding: 0;
+  border: none;
+  padding: 0;
+  margin: 2px;
+  font-size: 32px;
+  line-height: 32px;
+  border-radius: 4px;
+  color: white;
+  background-color: #515258;
+  font-family: 'Roboto', sans-serif;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.08);
+
+  &.warn {
+    background-color: #e53935;
+  }
+
+  &.enter {
+    background-color: #4caf50;
+  }
+  &:focus {
+    outline: none;
+  }
+
+  &:disabled {
+    opacity: 0.2;
+    background-color: #aaa;
+    cursor: default;
+    pointer-events: none;
+  }
+  &:active {
+    background-color: #ccc;
+  }
+  &.spacer {
+    visibility: hidden;
+  }
+}
